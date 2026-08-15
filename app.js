@@ -12,6 +12,96 @@ let activeModule = "all";
 let resourceStage = "all";
 let searchTerm = "";
 
+function escapeCodeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function inferLanguage(code, lesson) {
+  const text = code.trim();
+  if (/^(git |gh )/m.test(text)) return "git";
+  if (/^(winget |Get-|New-Item|Set-|python -m|\.\\)/m.test(text)) return "powershell";
+  if (/^(# |## |\|.+\|)/m.test(text)) return "markdown";
+  if (/^(experiment_name:|seed:|data:|model:|train:)/m.test(text)) return "yaml";
+  if (lesson.module === "git") return "git";
+  return "python";
+}
+
+function codeLabHtml(lessonId) {
+  const lab = codeLabs[lessonId];
+  if (!lab) return "";
+  return `<section class="code-lab" aria-labelledby="code-lab-title">
+    <header class="code-lab-heading">
+      <span>MARKDOWN 跟着敲</span>
+      <h2 id="code-lab-title">${lab.title}</h2>
+      <p>${lab.intro}</p>
+    </header>
+    <div class="code-lab-steps">${lab.steps.map((step, index) => `<article class="code-step">
+      <div class="code-step-copy">
+        <span>第 ${index + 1} 步</span>
+        <h3>${step.title}</h3>
+        <p>${step.note}</p>
+      </div>
+      <div class="code-block" data-language="${step.lang}">
+        <div class="code-toolbar"><span>${step.lang}</span><button class="copy-code" type="button">复制代码</button></div>
+        <pre><code>${escapeCodeHtml(step.code)}</code></pre>
+      </div>
+    </article>`).join("")}</div>
+  </section>`;
+}
+
+function copyWithFallback(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("浏览器拒绝复制");
+}
+
+async function copyCode(button) {
+  const code = button.closest(".code-block").querySelector("code").textContent;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      copyWithFallback(code);
+    }
+    button.textContent = "已复制 ✓";
+    button.classList.add("copied");
+  } catch (error) {
+    button.textContent = "复制失败，请手动选择";
+  }
+  window.setTimeout(() => {
+    button.textContent = "复制代码";
+    button.classList.remove("copied");
+  }, 1800);
+}
+
+function enhanceCodeBlocks(lesson) {
+  const content = $("#lesson-content");
+  content.querySelectorAll("pre").forEach(pre => {
+    if (pre.closest(".code-block")) return;
+    const code = pre.querySelector("code") || pre;
+    const language = inferLanguage(code.textContent, lesson);
+    const wrapper = document.createElement("div");
+    wrapper.className = "code-block lesson-code-block";
+    wrapper.dataset.language = language;
+    wrapper.innerHTML = `<div class="code-toolbar"><span>${language}</span><button class="copy-code" type="button">复制代码</button></div>`;
+    pre.parentNode.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+  });
+  content.querySelectorAll(".copy-code").forEach(button => {
+    button.addEventListener("click", () => copyCode(button));
+  });
+}
+
 function moduleById(id) {
   return courseModules.find(module => module.id === id);
 }
@@ -165,12 +255,9 @@ function showLesson(index) {
   $("#lesson-title").textContent = lesson.title;
   $("#lesson-summary").textContent = lesson.summary;
   $("#lesson-goals").innerHTML = lesson.goals.map(goal => `<span class="goal-chip">学会：${goal}</span>`).join("");
-  $("#lesson-content").innerHTML = lesson.body;
+  $("#lesson-content").innerHTML = lesson.body + codeLabHtml(lesson.id);
+  enhanceCodeBlocks(lesson);
   renderRelated(lesson);
-  $("#quiz-title").textContent = lesson.quiz.question;
-  $("#quiz-options").innerHTML = lesson.quiz.options.map((option, i) => `<button class="quiz-option" type="button" data-option="${i}">${String.fromCharCode(65 + i)}. ${option}</button>`).join("");
-  $("#quiz-feedback").textContent = "";
-  $("#quiz-options").querySelectorAll("button").forEach(button => button.addEventListener("click", answerQuiz));
   $("#previous-button").disabled = currentIndex === 0;
   $("#next-button").disabled = currentIndex === lessons.length - 1;
   updateCompleteButton();
@@ -179,17 +266,6 @@ function showLesson(index) {
   localStorage.setItem(lastLessonKey, lesson.id);
   document.title = `${lesson.number} ${lesson.title} · AI 科研入门课`;
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function answerQuiz(event) {
-  const selected = Number(event.currentTarget.dataset.option);
-  const quiz = lessons[currentIndex].quiz;
-  $("#quiz-options").querySelectorAll("button").forEach((button, index) => {
-    button.disabled = true;
-    if (index === quiz.answer) button.classList.add("correct");
-    if (index === selected && selected !== quiz.answer) button.classList.add("wrong");
-  });
-  $("#quiz-feedback").textContent = selected === quiz.answer ? quiz.success : quiz.failure;
 }
 
 function updateCompleteButton() {

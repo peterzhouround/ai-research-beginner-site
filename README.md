@@ -6,7 +6,7 @@
 
 ## 当前内容
 
-- 6 个单元、42 节完整课程、42 份随堂测验
+- 6 个单元、42 节完整课程，以及贯穿全路线的跟敲代码实验
 - Windows 环境、Python、Git 与 GitHub
 - NumPy、pandas、Matplotlib 与必要数学
 - 机器学习问题定义、数据划分、Pipeline、指标和过拟合
@@ -25,6 +25,7 @@
 - 总体及分单元学习进度
 - 浏览器本机保存学习状态
 - 每课目标、讲解、代码、常见坑、任务、验收标准和资料
+- Markdown 风格分步实验，支持语言标识和一键复制代码
 - 资源库按学习阶段筛选
 - 深色模式、键盘与移动端适配
 
@@ -35,7 +36,8 @@ ai-research-beginner-site/
 ├─ index.html       # 页面结构与 SEO 信息
 ├─ styles.css       # 视觉样式和响应式布局
 ├─ curriculum.js   # 课程、资源和 24 周路线数据
-├─ app.js          # 搜索、筛选、进度、路由和测验逻辑
+├─ code-labs.js    # 可跟敲的 Python、Git、PowerShell 和 Markdown 实验
+├─ app.js          # 搜索、筛选、进度、路由和代码复制逻辑
 ├─ favicon.svg
 └─ README.md
 ```
@@ -57,9 +59,9 @@ python -m http.server 8000
 ```powershell
 git status
 git diff
-git add index.html styles.css curriculum.js app.js README.md
+git add index.html styles.css curriculum.js code-labs.js app.js README.md
 git diff --staged
-git commit -m "Expand AI research curriculum"
+git commit -m "Add follow-along code labs"
 git push
 ```
 
