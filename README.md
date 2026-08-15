@@ -1,32 +1,74 @@
 # AI 科研入门课
 
-一个无需后端和数据库的中文静态教程网站。当前包含 9 节零基础课程，其中 Git 与 GitHub 是一个由 5 课组成的完整小单元，另有互动测验、学习进度、深色模式、移动端适配，以及按阶段整理的 B站、YouTube、官方教材和练习平台链接。
+面向零基础学习者的中文静态教程网站。课程不是资料清单，而是一条从第一行 Python 代码走到第一次可复现实验的 24 周路线。
 
-## 本地使用
+在线访问：<https://peterzhouround.github.io/ai-research-beginner-site/>
 
-直接双击 `index.html`，使用 Edge、Chrome 等现代浏览器打开。
+## 当前内容
 
-学习进度保存在当前浏览器的 `localStorage` 中。清除浏览器网站数据后，进度也会被清除。
+- 6 个单元、42 节完整课程、42 份随堂测验
+- Windows 环境、Python、Git 与 GitHub
+- NumPy、pandas、Matplotlib 与必要数学
+- 机器学习问题定义、数据划分、Pipeline、指标和过拟合
+- PyTorch Tensor、DataLoader、训练、验证、checkpoint 与推理
+- MLP、CNN、RNN、Attention、Transformer、微调、LoRA 与 RAG
+- 论文检索、阅读、复现、对照/消融、多种子实验和结果分析
+- 24 周作品路线与毕业研究项目
+- 31 份按阶段筛选的官方教程、大学公开课、B站和 YouTube 课程
 
-## 文件说明
+课程与外部链接最近核对日期：**2026-08-16**。框架与安装命令更新较快，实际安装时请以对应官方网站当前页面为准。
 
-- `index.html`：网页结构
-- `styles.css`：页面样式和响应式布局
-- `app.js`：课程内容、测验和学习进度
-- `favicon.svg`：网站图标
+## 网站功能
 
-## 外部学习资源
+- 按单元组织的课程目录
+- 课程关键词搜索与单元筛选
+- 总体及分单元学习进度
+- 浏览器本机保存学习状态
+- 每课目标、讲解、代码、常见坑、任务、验收标准和资料
+- 资源库按学习阶段筛选
+- 深色模式、键盘与移动端适配
 
-首页“精选学习资源”按照 Python、机器学习、深度学习三个阶段整理。每节课程底部还有与本课直接对应的延伸学习链接。
+## 文件结构
 
-资源链接会在新标签页打开。外部网站的可访问性、账号要求和内容变化由对应平台决定。
+```text
+ai-research-beginner-site/
+├─ index.html       # 页面结构与 SEO 信息
+├─ styles.css       # 视觉样式和响应式布局
+├─ curriculum.js   # 课程、资源和 24 周路线数据
+├─ app.js          # 搜索、筛选、进度、路由和测验逻辑
+├─ favicon.svg
+└─ README.md
+```
 
-## 部署
+## 本地预览
 
-这是纯静态网站。将整个目录上传到任意静态网站托管服务或阿里云服务器的网站目录即可，不需要安装 Node.js、Python 或数据库。
+这是纯静态网站，不需要数据库或 Node.js 构建步骤。直接打开 `index.html` 即可。为了更接近线上环境，也可以在项目目录运行：
 
-若使用 Nginx，可以把目录中的全部文件上传到站点根目录，并确保首页文件为 `index.html`。
+```powershell
+python -m http.server 8000
+```
 
-## 添加课程
+然后访问 <http://localhost:8000>。
 
-在 `app.js` 顶部的 `lessons` 数组中复制一个课程对象，修改编号、标题、正文和测验即可。课程正文使用 HTML 片段。
+## 发布与更新
+
+网站通过 GitHub Pages 从 `main` 分支根目录发布。修改后先本地检查，再提交并推送：
+
+```powershell
+git status
+git diff
+git add index.html styles.css curriculum.js app.js README.md
+git diff --staged
+git commit -m "Expand AI research curriculum"
+git push
+```
+
+GitHub Pages 会自动重新部署。通常数十秒到几分钟后线上版本更新。
+
+## 内容维护原则
+
+1. 技术事实优先使用官方文档、原论文和大学课程。
+2. 每个外部资源必须说明适用阶段和使用方式。
+3. 不收录夸大速成承诺、来源不清或必须加群领取资料的课程作为主推荐。
+4. 每节课都必须包含可执行任务和可判断的验收标准。
+5. 科研内容强调可追溯、可复现、控制变量、负面结果和结论边界。
