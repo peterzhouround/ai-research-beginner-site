@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="从零开始学习 Python、机器学习、深度学习与科研方法。">
+  <meta name="theme-color" content="#f5f2e9">
+  <title>AI 科研入门课</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#lesson-content">跳到正文</a>
+  <header class="topbar">
+    <button class="icon-button menu-button" id="menu-button" type="button" aria-label="打开目录">☰</button>
+    <a class="brand" href="#home">
+      <span class="brand-mark">AI</span>
+      <span><strong>AI 科研入门课</strong><small>从第一行代码，到第一次实验</small></span>
+    </a>
+    <div class="top-actions"><span class="streak">今天也在进步</span><button class="icon-button" id="theme-button" type="button" aria-label="切换主题">◐</button></div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="progress-card">
+        <div class="progress-heading"><span>总体进度</span><strong id="progress-text">0%</strong></div>
+        <div class="progress-track"><span id="progress-bar"></span></div>
+        <small id="progress-detail">0 / 9 课已完成</small>
+      </div>
+      <nav id="lesson-nav" aria-label="课程目录"></nav>
+      <div class="sidebar-note"><strong>学习原则</strong><p>少看一点，多敲一遍。遇到错误不是失败，而是训练开始了。</p></div>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <main class="main">
+      <section class="hero" id="home-view">
+        <div class="hero-copy">
+          <span class="eyebrow">零基础 · 可执行 · 有反馈</span>
+          <h1>把“我想学 AI”，<br>变成每天一个小成果。</h1>
+          <p>这不是资料仓库，而是一条能走完的学习路线。每课只解决一个问题，配有例子、练习和即时测验。</p>
+          <div class="hero-actions">
+            <button class="primary-button" id="continue-button" type="button">开始第一课 →</button>
+            <button class="secondary-button" id="roadmap-button" type="button">查看学习路线</button>
+            <button class="text-button" id="resources-button" type="button">精选资源 ↗</button>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="数据、代码与模型学习示意图">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="visual-card card-data"><span>01</span><strong>数据</strong><small>认识输入</small></div>
+          <div class="visual-card card-code"><span>02</span><strong>代码</strong><small>表达过程</small></div>
+          <div class="visual-card card-model"><span>03</span><strong>模型</strong><small>发现规律</small></div>
+          <div class="visual-core">学<br>会</div>
+        </div>
+      </section>
+
+      <section class="roadmap-section" id="roadmap">
+        <div class="section-heading"><span class="eyebrow">半年学习地图</span><h2>先打地基，再做模型</h2><p>现在开放的是第一单元。后续课程会沿着同一结构持续补充。</p></div>
+        <div class="roadmap-grid">
+          <article class="roadmap-card active"><span>01</span><h3>Python、Git 与 AI 常识</h3><p>变量、判断、版本管理，以及模型究竟在做什么。</p><small>当前阶段 · 9 课</small></article>
+          <article class="roadmap-card"><span>02</span><h3>数据与必要数学</h3><p>NumPy、Pandas、画图、向量、导数和概率。</p><small>即将推出</small></article>
+          <article class="roadmap-card"><span>03</span><h3>机器学习</h3><p>回归、分类、数据划分、评价指标与过拟合。</p><small>即将推出</small></article>
+          <article class="roadmap-card"><span>04</span><h3>深度学习</h3><p>PyTorch、神经网络与完整训练流程。</p><small>即将推出</small></article>
+          <article class="roadmap-card"><span>05</span><h3>项目与科研</h3><p>规范实验、论文阅读、复现与研究表达。</p><small>未来阶段</small></article>
+        </div>
+      </section>
+
+      <section class="resources-section" id="resources">
+        <div class="section-heading">
+          <span class="eyebrow">精选学习资源</span>
+          <h2>一条主线，少量好课</h2>
+          <p>不需要全部看完。当前先学 Python 区；到达对应阶段后，再打开机器学习和深度学习资源。</p>
+        </div>
+        <div class="resource-path" aria-label="推荐学习顺序">
+          <span>本站课程</span><b>→</b><span>选一个视频</span><b>→</b><span>亲手写代码</span><b>→</b><span>完成练习</span>
+        </div>
+
+        <div class="resource-group">
+          <div class="resource-group-title"><span>现在学习</span><h3>Python 与 Git 零基础</h3></div>
+          <div class="resource-grid">
+            <a class="resource-card featured" href="https://www.bilibili.com/video/BV1JL4y1x7xC/" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform bilibili">B站</span><span class="level">中文视频 · 主推荐</span></div><h4>北京理工大学 Python 语言程序设计</h4><p>系统公开课，覆盖变量、输入输出、判断、循环、函数和文件，适合跟随本站第一阶段学习。</p><strong>打开课程 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://liaoxuefeng.com/books/python/introduction/" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform reading">教程</span><span class="level">中文阅读</span></div><h4>廖雪峰 Python 教程</h4><p>免费、零起点、示例完整。遇到语法忘记时，适合作为随手查询的参考书。</p><strong>打开教程 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://www.kaggle.com/learn/python" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform practice">练习</span><span class="level">英文 · 可运行代码</span></div><h4>Kaggle Learn Python</h4><p>约 5 小时的交互式课程。在网页中直接运行代码，适合学完基础语法后巩固。</p><strong>开始练习 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://git-scm.com/book/zh/v2" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform git">Git</span><span class="level">中文 · 官方开源书</span></div><h4>Pro Git 中文版</h4><p>Git 官方站点提供的完整中文教材。先阅读起步和 Git 基础，其他章节需要时再查。</p><strong>打开教材 ↗</strong>
+            </a>
+          </div>
+        </div>
+
+        <div class="resource-group later">
+          <div class="resource-group-title"><span>学完 Python 后</span><h3>机器学习与深度学习</h3></div>
+          <div class="resource-grid">
+            <a class="resource-card" href="https://developers.google.com/machine-learning/crash-course" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform google">Google</span><span class="level">机器学习 · 交互课程</span></div><h4>Machine Learning Crash Course</h4><p>动画、可视化与练习结合，用来建立回归、分类、损失等机器学习基础。</p><strong>以后学习 ↗</strong>
+            </a>
+            <a class="resource-card featured" href="https://zh.d2l.ai/" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform reading">教材</span><span class="level">中文 · 主教材</span></div><h4>《动手学深度学习》</h4><p>把数学、代码和实验放在一起的免费中文教材。进入深度学习阶段后作为主线。</p><strong>打开教材 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://space.bilibili.com/1567748478/channel/seriesdetail?sid=358497" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform bilibili">B站</span><span class="level">中文视频 · PyTorch</span></div><h4>《动手学深度学习》配套视频</h4><p>D2L 官方页面推荐的 PyTorch 版教学视频，适合与在线教材同步观看。</p><strong>打开视频 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://docs.pytorch.ac.cn/tutorials/" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform pytorch">PyTorch</span><span class="level">中文文档 · 官方教程</span></div><h4>PyTorch 中文教程</h4><p>从数据加载、构建网络、训练到模型保存，适合模型训练阶段查阅。</p><strong>打开教程 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform youtube">YouTube</span><span class="level">英文 · 视觉直觉</span></div><h4>3Blue1Brown：神经网络</h4><p>用动画解释神经网络、梯度下降和反向传播。建议开启中文字幕，先理解直觉。</p><strong>观看播放列表 ↗</strong>
+            </a>
+            <a class="resource-card" href="https://scikit-learn.org/stable/getting_started.html" target="_blank" rel="noopener noreferrer">
+              <div><span class="platform reading">文档</span><span class="level">英文 · 机器学习</span></div><h4>scikit-learn 入门指南</h4><p>学习 fit、predict、预处理、交叉验证等规范流程，适合开始机器学习项目时使用。</p><strong>以后查阅 ↗</strong>
+            </a>
+          </div>
+        </div>
+        <div class="resource-warning"><strong>避免囤课：</strong>每次只选择一个主课程。看 30 分钟后必须自己写代码或完成练习，不能连续刷视频代替实践。</div>
+      </section>
+
+      <article class="lesson-view" id="lesson-view" hidden>
+        <div class="lesson-topline"><button class="back-button" id="back-button" type="button">← 返回首页</button><span id="lesson-duration"></span></div>
+        <header class="lesson-header">
+          <span class="lesson-kicker" id="lesson-kicker"></span><h1 id="lesson-title"></h1><p id="lesson-summary"></p><div class="lesson-goals" id="lesson-goals"></div>
+        </header>
+        <div class="lesson-body" id="lesson-content" tabindex="-1"></div>
+        <section class="quiz-card">
+          <div class="quiz-label">随堂检查</div><h2 id="quiz-title"></h2><div class="quiz-options" id="quiz-options"></div><p class="quiz-feedback" id="quiz-feedback" aria-live="polite"></p>
+        </section>
+        <footer class="lesson-footer">
+          <button class="secondary-button" id="previous-button" type="button">← 上一课</button>
+          <button class="complete-button" id="complete-button" type="button">标记本课完成 ✓</button>
+          <button class="primary-button" id="next-button" type="button">下一课 →</button>
+        </footer>
+      </article>
+    </main>
+  </div>
+  <footer class="site-footer"><p>AI 科研入门课 · 用作品记录成长</p><button id="reset-progress" type="button">重置本机学习进度</button></footer>
+  <script src="app.js"></script>
+</body>
+</html>
