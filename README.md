@@ -1,20 +1,22 @@
 # AI 科研入门课
 
-面向零基础学习者的中文静态教程网站。课程不是资料清单，而是一条从第一行 Python 代码走到第一次可复现实验的 24 周路线。
+面向零基础学习者的中文静态教程网站。课程不是资料清单，而是一条从第一行 Python 代码走到第一次可复现实验的 42 周严格先修路线。
 
 在线访问：<https://peterzhouround.github.io/ai-research-beginner-site/>
 
 ## 当前内容
 
-- 6 个单元、42 节完整课程，以及贯穿全路线的跟敲代码实验
+- 9 个阶段、66 节课程、56 组代码实验和 114 个跟敲步骤
 - Windows 环境、Python、Git 与 GitHub
 - NumPy、pandas、Matplotlib 与必要数学
 - 机器学习问题定义、数据划分、Pipeline、指标和过拟合
 - PyTorch Tensor、DataLoader、训练、验证、checkpoint 与推理
-- MLP、CNN、RNN、Attention、Transformer、微调、LoRA 与 RAG
+- PyTorch 训练闭环、CNN、RNN、Attention 与 Transformer
+- Tokenization、预训练模型、推理、微调、LoRA 与 LLM 评测
+- 独立的 RAG 专项：切分、BM25、向量检索、混合召回、重排、引用和分段评测
 - 论文检索、阅读、复现、对照/消融、多种子实验和结果分析
-- 24 周作品路线与毕业研究项目
-- 31 份按阶段筛选的官方教程、大学公开课、B站和 YouTube 课程
+- 42 周作品路线与毕业研究项目
+- 41 份按阶段筛选的官方教程、大学公开课、B站和 YouTube 课程
 
 课程与外部链接最近核对日期：**2026-08-16**。框架与安装命令更新较快，实际安装时请以对应官方网站当前页面为准。
 
@@ -23,6 +25,8 @@
 - 按单元组织的课程目录
 - 课程关键词搜索与单元筛选
 - 总体及分单元学习进度
+- 严格顺序解锁：后续课程可预览，但不能跳过前置课标记完成
+- 九阶段先修路线、当前应学课程和阶段关卡
 - 浏览器本机保存学习状态
 - 每课目标、讲解、代码、常见坑、任务、验收标准和资料
 - Markdown 风格分步实验，支持语言标识和一键复制代码
@@ -35,9 +39,11 @@
 ai-research-beginner-site/
 ├─ index.html       # 页面结构与 SEO 信息
 ├─ styles.css       # 视觉样式和响应式布局
-├─ curriculum.js   # 课程、资源和 24 周路线数据
+├─ curriculum.js   # 原始课程与资源数据
 ├─ code-labs.js    # 可跟敲的 Python、Git、PowerShell 和 Markdown 实验
-├─ app.js          # 搜索、筛选、进度、路由和代码复制逻辑
+├─ pathway.js      # 42 周严格路线、24 节扩展课与先修元数据
+├─ pathway-labs.js # 扩展课程的分步代码实验
+├─ app.js          # 搜索、解锁、进度、路由和代码复制逻辑
 ├─ favicon.svg
 └─ README.md
 ```
@@ -59,9 +65,9 @@ python -m http.server 8000
 ```powershell
 git status
 git diff
-git add index.html styles.css curriculum.js code-labs.js app.js README.md
+git add index.html styles.css curriculum.js code-labs.js pathway.js pathway-labs.js app.js README.md
 git diff --staged
-git commit -m "Add follow-along code labs"
+git commit -m "Build strict staged learning path"
 git push
 ```
 

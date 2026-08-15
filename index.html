@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="42 课中文 AI 科研入门路线：Python、Git、数据与数学、机器学习、PyTorch、深度学习和论文复现。">
+  <meta name="description" content="66 课中文 AI 科研入门路线：按严格先修关系学习 Python、Git、数据、机器学习、PyTorch、Transformer、LLM、RAG 和论文复现。">
   <meta name="theme-color" content="#f5f2e9">
   <meta property="og:title" content="AI 科研入门课">
-  <meta property="og:description" content="从第一行代码到第一次可复现实验，6 个单元、42 课、24 周学习路线。">
+  <meta property="og:description" content="从第一行代码到第一次可复现实验；9 个阶段、66 课、42 周严格学习路线。">
   <meta property="og:type" content="website">
-  <title>AI 科研入门课 · 42 课完整路线</title>
+  <title>AI 科研入门课 · 66 课严格路线</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -31,7 +31,7 @@
       <div class="progress-card">
         <div class="progress-heading"><span>总体进度</span><strong id="progress-text">0%</strong></div>
         <div class="progress-track"><span id="progress-bar"></span></div>
-        <small id="progress-detail">0 / 42 课已完成</small>
+        <small id="progress-detail">0 / 66 课已完成</small>
       </div>
 
       <label class="course-search">
@@ -50,11 +50,11 @@
           <div class="hero-copy">
             <span class="eyebrow">零基础 · 可执行 · 可复现</span>
             <h1>把“我想学 AI”，<br>变成一套完整科研能力。</h1>
-            <p>不是资料堆砌。沿着 24 周主线，从 Windows 环境、Python 与 Git，走到机器学习、PyTorch、Transformer、论文复现和小型研究。</p>
+            <p>不是资料堆砌，也不把热点混在一起。沿着严格先修主线，先完成机器学习与过拟合，再进入 PyTorch、Transformer、LLM；只有通过前置关卡后才学习 RAG。</p>
             <div class="hero-stats" aria-label="课程统计">
               <span><strong id="stat-lessons">42</strong><small>节课程</small></span>
               <span><strong id="stat-modules">6</strong><small>个单元</small></span>
-              <span><strong>24</strong><small>周路线</small></span>
+              <span><strong id="stat-weeks">42</strong><small>周路线</small></span>
               <span><strong id="stat-resources">31</strong><small>份精选资料</small></span>
             </div>
             <div class="hero-actions">
@@ -72,13 +72,24 @@
           </div>
         </section>
 
+        <section class="sequence-section" id="strict-sequence">
+          <div class="sequence-copy">
+            <span class="eyebrow">严格先修路线</span>
+            <h2>不能同时乱学：一关完成，再进下一关</h2>
+            <p id="pathway-promise"></p>
+            <div class="current-step" id="current-step"></div>
+          </div>
+          <div class="sequence-rail" id="sequence-rail" aria-label="九阶段严格学习顺序"></div>
+          <div class="sequence-rules" id="sequence-rules"></div>
+        </section>
+
         <section class="roadmap-section" id="roadmap">
-          <div class="section-heading"><span class="eyebrow">完整课程地图</span><h2>六个单元，逐层打通</h2><p>每个单元都有明确产出。无需等数学全部学完才实践，也不要跳过数据划分和实验规范。</p></div>
+          <div class="section-heading"><span class="eyebrow">完整课程地图</span><h2>九个阶段，按依赖逐层解锁</h2><p>后期课程可以预览，但上一课未完成时不能标记完成。RAG 独立位于第八阶段，不会与过拟合、训练循环混学。</p></div>
           <div class="roadmap-grid" id="roadmap-grid"></div>
         </section>
 
         <section class="plan-section" id="study-plan">
-          <div class="section-heading"><span class="eyebrow">24 周执行方案</span><h2>每四周交付一件作品</h2><p>按照每周约 8–12 小时设计。时间不足时延长周期，不压缩动手和复盘。</p></div>
+          <div class="section-heading"><span class="eyebrow">42 周执行方案</span><h2>每个阶段都有作品与解锁关卡</h2><p>按照每周约 8–12 小时设计。可以延长周期，但不要跳过前置项目，也不要同时开启 RAG 与经典机器学习。</p></div>
           <div class="plan-grid" id="plan-grid"></div>
           <div class="weekly-rhythm">
             <strong>推荐每周节奏</strong>
@@ -113,6 +124,7 @@
           <span class="lesson-kicker" id="lesson-kicker"></span>
           <h1 id="lesson-title"></h1>
           <p id="lesson-summary"></p>
+          <div class="lesson-prerequisite" id="lesson-prerequisite" aria-live="polite"></div>
           <div class="lesson-goals" id="lesson-goals"></div>
         </header>
         <div class="lesson-body" id="lesson-content" tabindex="-1"></div>
@@ -132,6 +144,8 @@
   </footer>
   <script src="curriculum.js"></script>
   <script src="code-labs.js"></script>
+  <script src="pathway.js"></script>
+  <script src="pathway-labs.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
