@@ -5,12 +5,16 @@ const nav = $("#lesson-nav");
 const storageKey = "ai-course-progress-v1";
 const themeKey = "ai-course-theme-v1";
 const lastLessonKey = "ai-course-last-lesson-v2";
+const sidebarStateKey = "ai-course-sidebar-collapsed-v1";
+const navStateKey = "ai-course-nav-modules-v1";
+const compactViewport = matchMedia("(max-width: 980px)");
 
 let completed = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
 let currentIndex = 0;
 let activeModule = "all";
 let resourceStage = "all";
 let searchTerm = "";
+let expandedModules = new Set(JSON.parse(localStorage.getItem(navStateKey) || "[]"));
 
 function escapeCodeHtml(value) {
   return value
@@ -129,6 +133,51 @@ function currentLearningIndex() {
   return firstIncomplete >= 0 ? firstIncomplete : lessons.length - 1;
 }
 
+function setSidebarCollapsed(collapsed) {
+  $("#sidebar-collapse").textContent = compactViewport.matches ? "×" : "‹";
+  if (compactViewport.matches) {
+    $("#app-shell").classList.remove("sidebar-collapsed");
+    $("#sidebar").classList.toggle("open", !collapsed);
+    $("#scrim").hidden = collapsed;
+    $("#menu-button").setAttribute("aria-expanded", String(!collapsed));
+    $("#menu-icon").textContent = collapsed ? "☰" : "×";
+    return;
+  }
+  $("#app-shell").classList.toggle("sidebar-collapsed", collapsed);
+  $("#menu-button").setAttribute("aria-expanded", String(!collapsed));
+  $("#menu-icon").textContent = collapsed ? "☰" : "‹";
+  localStorage.setItem(sidebarStateKey, String(collapsed));
+}
+
+function toggleSidebar() {
+  if (compactViewport.matches) {
+    setSidebarCollapsed($("#sidebar").classList.contains("open"));
+  } else {
+    setSidebarCollapsed(!$("#app-shell").classList.contains("sidebar-collapsed"));
+  }
+}
+
+function renderFocusCard() {
+  const index = currentLearningIndex();
+  const lesson = lessons[index];
+  const module = moduleById(lesson.module);
+  $("#sidebar-focus-card").innerHTML = `<span>当前焦点 · ${module.number}</span><strong>${lesson.number} ${lesson.title}</strong><small>${module.title}</small><button type="button">继续这一课 →</button>`;
+  $("#sidebar-focus-card button").addEventListener("click", () => navigateToLesson(index));
+  $("#top-next-number").textContent = lesson.number;
+  $("#top-continue-button").setAttribute("aria-label", `继续学习第 ${lesson.number} 课：${lesson.title}`);
+}
+
+function updateReadingProgress() {
+  if (lessonView.hidden) {
+    $("#reading-progress-bar").style.width = "0%";
+    return;
+  }
+  const article = lessonView.getBoundingClientRect();
+  const total = Math.max(1, lessonView.scrollHeight - innerHeight);
+  const travelled = Math.min(total, Math.max(0, -article.top + 76));
+  $("#reading-progress-bar").style.width = `${Math.round(travelled / total * 100)}%`;
+}
+
 function renderSequence() {
   const currentLesson = lessons[currentLearningIndex()];
   const currentModule = moduleById(currentLesson.module);
@@ -172,6 +221,7 @@ function renderModuleFilters() {
   }).join("");
   $("#module-filter").querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
     activeModule = button.dataset.module;
+    if (activeModule !== "all") expandedModules.add(activeModule);
     renderModuleFilters();
     renderNav();
   }));
@@ -179,6 +229,7 @@ function renderModuleFilters() {
 
 function renderNav() {
   const normalized = searchTerm.trim().toLowerCase();
+  if (!expandedModules.size) expandedModules.add(lessons[currentLearningIndex()].module);
   let html = "";
   let matches = 0;
   courseModules.forEach(module => {
@@ -192,17 +243,30 @@ function renderNav() {
     matches += moduleLessons.length;
     const done = moduleLessons.filter(lesson => completed.has(lesson.id)).length;
     const moduleUnlocked = isModuleUnlocked(module.id);
-    html += `<div class="nav-label ${moduleUnlocked ? "" : "locked"}"><span>${module.number} · ${module.title}</span><small>${moduleUnlocked ? `${done}/${moduleLessons.length}` : "待前置"}</small></div>`;
-    html += moduleLessons.map(lesson => {
+    const activeLessonModule = !lessonView.hidden && lessons[currentIndex].module === module.id;
+    const expanded = Boolean(normalized) || activeModule !== "all" || activeLessonModule || expandedModules.has(module.id);
+    html += `<section class="nav-module ${expanded ? "expanded" : ""} ${moduleUnlocked ? "" : "locked"}" data-nav-module="${module.id}">
+      <button class="nav-label" type="button" data-toggle-module="${module.id}" aria-expanded="${expanded}">
+        <span><i style="--module-dot:${module.color}">${module.number}</i>${module.title}</span>
+        <small>${moduleUnlocked ? `${done}/${moduleLessons.length}` : "待前置"}<b aria-hidden="true">⌄</b></small>
+      </button>
+      <div class="nav-lessons">${moduleLessons.map(lesson => {
       const index = lessons.findIndex(item => item.id === lesson.id);
       const unlocked = isLessonUnlocked(index);
       return `<button class="lesson-link ${currentIndex === index && !lessonView.hidden ? "active" : ""} ${completed.has(lesson.id) ? "completed" : ""} ${unlocked ? "" : "locked"}" data-index="${index}" type="button" title="${unlocked ? "打开课程" : `预览课程；先完成第 ${lessons[index - 1].number} 课`}">
         <span class="lesson-number">${lesson.number}</span><span class="lesson-link-title">${lesson.title}</span><span class="lesson-check">${unlocked ? "✓" : "锁"}</span>
       </button>`;
-    }).join("");
+    }).join("")}</div></section>`;
   });
   nav.innerHTML = html || `<p class="empty-state">没有找到“${searchTerm}”相关课程。换一个关键词试试。</p>`;
+  $("#search-result-count").textContent = normalized || activeModule !== "all" ? `找到 ${matches} 课` : `共 ${matches} 课`;
   nav.setAttribute("aria-label", `课程目录，共显示 ${matches} 课`);
+  nav.querySelectorAll("[data-toggle-module]").forEach(button => button.addEventListener("click", () => {
+    const id = button.dataset.toggleModule;
+    expandedModules.has(id) ? expandedModules.delete(id) : expandedModules.add(id);
+    localStorage.setItem(navStateKey, JSON.stringify([...expandedModules]));
+    renderNav();
+  }));
   nav.querySelectorAll(".lesson-link").forEach(button => button.addEventListener("click", () => navigateToLesson(Number(button.dataset.index))));
 }
 
@@ -290,6 +354,7 @@ function updateProgress() {
   renderSequence();
   renderPlan();
   renderResources();
+  renderFocusCard();
 }
 
 function showHome() {
@@ -298,12 +363,15 @@ function showHome() {
   document.title = "AI 科研入门课 · 66 课严格路线";
   renderNav();
   closeSidebar();
+  updateReadingProgress();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function showLesson(index) {
   currentIndex = Math.max(0, Math.min(index, lessons.length - 1));
   const lesson = lessons[currentIndex];
+  expandedModules.add(lesson.module);
+  localStorage.setItem(navStateKey, JSON.stringify([...expandedModules]));
   homeContainer.hidden = true;
   lessonView.hidden = false;
   $("#lesson-position").textContent = `第 ${currentIndex + 1} / ${lessons.length} 课`;
@@ -330,6 +398,7 @@ function showLesson(index) {
   closeSidebar();
   localStorage.setItem(lastLessonKey, lesson.id);
   document.title = `${lesson.number} ${lesson.title} · AI 科研入门课`;
+  updateReadingProgress();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -354,6 +423,10 @@ function toggleComplete() {
 function closeSidebar() {
   $("#sidebar").classList.remove("open");
   $("#scrim").hidden = true;
+  if (compactViewport.matches) {
+    $("#menu-button").setAttribute("aria-expanded", "false");
+    $("#menu-icon").textContent = "☰";
+  }
 }
 
 function loadRoute() {
@@ -368,22 +441,23 @@ function applyTheme(theme) {
   $("#theme-button").setAttribute("aria-label", theme === "dark" ? "切换到浅色主题" : "切换到深色主题");
 }
 
-$("#continue-button").addEventListener("click", () => {
+function continueLearning() {
   const next = lessons.findIndex(lesson => !completed.has(lesson.id));
   const savedId = localStorage.getItem(lastLessonKey);
   const savedIndex = lessons.findIndex(lesson => lesson.id === savedId);
   navigateToLesson(next >= 0 ? next : (savedIndex >= 0 ? savedIndex : 0));
-});
+}
+
+$("#continue-button").addEventListener("click", continueLearning);
+$("#top-continue-button").addEventListener("click", continueLearning);
 $("#roadmap-button").addEventListener("click", () => $("#roadmap").scrollIntoView({ behavior: "smooth" }));
 $("#resources-button").addEventListener("click", () => $("#resources").scrollIntoView({ behavior: "smooth" }));
 $("#back-button").addEventListener("click", () => { location.hash = "home"; });
 $("#previous-button").addEventListener("click", () => navigateToLesson(currentIndex - 1));
 $("#next-button").addEventListener("click", () => navigateToLesson(currentIndex + 1));
 $("#complete-button").addEventListener("click", toggleComplete);
-$("#menu-button").addEventListener("click", () => {
-  $("#sidebar").classList.toggle("open");
-  $("#scrim").hidden = !$("#sidebar").classList.contains("open");
-});
+$("#menu-button").addEventListener("click", toggleSidebar);
+$("#sidebar-collapse").addEventListener("click", () => setSidebarCollapsed(true));
 $("#scrim").addEventListener("click", closeSidebar);
 $("#theme-button").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
 $("#course-search").addEventListener("input", event => { searchTerm = event.target.value; renderNav(); });
@@ -398,6 +472,11 @@ $("#reset-progress").addEventListener("click", () => {
 });
 window.addEventListener("hashchange", loadRoute);
 window.addEventListener("keydown", event => { if (event.key === "Escape") closeSidebar(); });
+window.addEventListener("scroll", updateReadingProgress, { passive: true });
+compactViewport.addEventListener("change", () => {
+  closeSidebar();
+  setSidebarCollapsed(compactViewport.matches || localStorage.getItem(sidebarStateKey) === "true");
+});
 
 $("#version-badge").textContent = courseVersion.label;
 $("#verified-note").textContent = `链接核对：${courseVersion.verifiedAt}`;
@@ -411,6 +490,7 @@ renderPlan();
 renderResourceFilters();
 renderResources();
 updateProgress();
+setSidebarCollapsed(compactViewport.matches || localStorage.getItem(sidebarStateKey) === "true");
 const savedTheme = localStorage.getItem(themeKey);
 applyTheme(savedTheme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 loadRoute();
