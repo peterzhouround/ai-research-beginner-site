@@ -110,6 +110,45 @@ function lessonsInModule(id) {
   return lessons.filter(lesson => lesson.module === id);
 }
 
+function isLessonUnlocked(index) {
+  if (index <= 0) return true;
+  if (completed.has(lessons[index].id)) return true;
+  return completed.has(lessons[index - 1].id);
+}
+
+function firstLessonIndex(moduleId) {
+  return lessons.findIndex(lesson => lesson.module === moduleId);
+}
+
+function isModuleUnlocked(moduleId) {
+  return isLessonUnlocked(firstLessonIndex(moduleId));
+}
+
+function currentLearningIndex() {
+  const firstIncomplete = lessons.findIndex(lesson => !completed.has(lesson.id));
+  return firstIncomplete >= 0 ? firstIncomplete : lessons.length - 1;
+}
+
+function renderSequence() {
+  const currentLesson = lessons[currentLearningIndex()];
+  const currentModule = moduleById(currentLesson.module);
+  $("#pathway-promise").textContent = pathway.promise;
+  $("#current-step").innerHTML = `<span>你当前应学习</span><strong>第 ${currentLesson.number} 课 · ${currentLesson.title}</strong><small>${currentModule.title} · 完成后才解锁下一课</small>`;
+  $("#sequence-rail").innerHTML = courseModules.map((module, index) => {
+    const unlocked = isModuleUnlocked(module.id);
+    const moduleLessons = lessonsInModule(module.id);
+    const done = moduleLessons.filter(lesson => completed.has(lesson.id)).length;
+    const complete = done === moduleLessons.length;
+    return `<article class="sequence-stage ${unlocked ? "unlocked" : "locked"} ${complete ? "complete" : ""}">
+      <div><b>${module.number}</b><span>${complete ? "已完成" : unlocked ? "可学习" : "待解锁"}</span></div>
+      <h3>${module.title}</h3>
+      <p>${module.lessons} · ${module.weeks}</p>
+      <small>${index === 0 ? "起点：无需先修" : `先修：${module.prerequisite}`}</small>
+    </article>`;
+  }).join("");
+  $("#sequence-rules").innerHTML = pathway.rules.map((rule, index) => `<div><span>${String(index + 1).padStart(2, "0")}</span><p>${rule}</p></div>`).join("");
+}
+
 function typeClass(type) {
   if (type.includes("B站")) return "bilibili";
   if (type.includes("YouTube")) return "youtube";
@@ -152,11 +191,13 @@ function renderNav() {
     if (!moduleLessons.length) return;
     matches += moduleLessons.length;
     const done = moduleLessons.filter(lesson => completed.has(lesson.id)).length;
-    html += `<div class="nav-label"><span>${module.number} · ${module.title}</span><small>${done}/${moduleLessons.length}</small></div>`;
+    const moduleUnlocked = isModuleUnlocked(module.id);
+    html += `<div class="nav-label ${moduleUnlocked ? "" : "locked"}"><span>${module.number} · ${module.title}</span><small>${moduleUnlocked ? `${done}/${moduleLessons.length}` : "待前置"}</small></div>`;
     html += moduleLessons.map(lesson => {
       const index = lessons.findIndex(item => item.id === lesson.id);
-      return `<button class="lesson-link ${currentIndex === index && !lessonView.hidden ? "active" : ""} ${completed.has(lesson.id) ? "completed" : ""}" data-index="${index}" type="button">
-        <span class="lesson-number">${lesson.number}</span><span class="lesson-link-title">${lesson.title}</span><span class="lesson-check">✓</span>
+      const unlocked = isLessonUnlocked(index);
+      return `<button class="lesson-link ${currentIndex === index && !lessonView.hidden ? "active" : ""} ${completed.has(lesson.id) ? "completed" : ""} ${unlocked ? "" : "locked"}" data-index="${index}" type="button" title="${unlocked ? "打开课程" : `预览课程；先完成第 ${lessons[index - 1].number} 课`}">
+        <span class="lesson-number">${lesson.number}</span><span class="lesson-link-title">${lesson.title}</span><span class="lesson-check">${unlocked ? "✓" : "锁"}</span>
       </button>`;
     }).join("");
   });
@@ -170,11 +211,14 @@ function renderRoadmap() {
     const moduleLessons = lessonsInModule(module.id);
     const done = moduleLessons.filter(lesson => completed.has(lesson.id)).length;
     const percent = Math.round(done / moduleLessons.length * 100);
-    return `<article class="roadmap-card" style="--module-color:${module.color}">
-      <div class="roadmap-top"><span>${module.number}</span><small>${module.weeks}</small></div>
+    const unlocked = isModuleUnlocked(module.id);
+    return `<article class="roadmap-card ${unlocked ? "unlocked" : "locked"}" style="--module-color:${module.color}">
+      <div class="roadmap-top"><span>${module.number}</span><small>${unlocked ? module.weeks : "🔒 待解锁"}</small></div>
       <h3>${module.title}</h3><p>${module.subtitle}</p>
+      <div class="roadmap-prerequisite"><span>先修</span><b>${module.prerequisite}</b></div>
+      <div class="roadmap-output"><span>阶段作品</span><b>${module.output}</b></div>
       <div class="module-progress"><span style="width:${percent}%"></span></div>
-      <div class="roadmap-meta"><small>${moduleLessons.length} 课 · ${done} 课完成</small><button type="button" data-open-module="${module.id}">${done ? "继续" : "开始"} →</button></div>
+      <div class="roadmap-meta"><small>${module.lessons} · ${done}/${moduleLessons.length} 完成</small><button type="button" data-open-module="${module.id}">${unlocked ? (done ? "继续" : "开始") : "预览"} →</button></div>
     </article>`;
   }).join("");
   $("#roadmap-grid").querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
@@ -189,7 +233,8 @@ function renderPlan() {
     <span>阶段 ${index + 1} · 第 ${phase.weeks} 周</span>
     <h3>${phase.title}</h3>
     <p>${phase.output}</p>
-    <small>对应课程 ${phase.lessons}</small>
+    <small>课程 ${phase.lessons}</small>
+    <b>${phase.gate}</b>
   </article>`).join("");
 }
 
@@ -204,10 +249,18 @@ function renderResourceFilters() {
 }
 
 function resourceCard(resource) {
+  const stage = moduleById(resource.stage);
+  const unlocked = stage ? isModuleUnlocked(stage.id) : true;
+  const tag = stage ? `第 ${stage.number} 阶段` : "补充资料";
+  if (!unlocked) {
+    return `<article class="resource-card locked" aria-label="${resource.title}，尚未解锁">
+      <div><span class="platform ${typeClass(resource.type)}">${resource.type}</span><span class="level">${tag} · 待解锁</span></div>
+      <h4>${resource.title}</h4><p>${resource.note}</p><strong>先完成前置阶段</strong>
+    </article>`;
+  }
   return `<a class="resource-card ${resource.featured ? "featured" : ""}" href="${resource.url}" target="_blank" rel="noopener noreferrer">
-    <div><span class="platform ${typeClass(resource.type)}">${resource.type}</span><span class="level">${resource.provider}</span></div>
-    <h4>${resource.title}</h4><p>${resource.note}</p><strong>打开资源 ↗</strong>
-  </a>`;
+    <div><span class="platform ${typeClass(resource.type)}">${resource.type}</span><span class="level">${tag} · ${resource.provider}</span></div>
+    <h4>${resource.title}</h4><p>${resource.note}</p><strong>打开资源 ↗</strong></a>`;
 }
 
 function renderResources() {
@@ -218,10 +271,11 @@ function renderResources() {
 function renderRelated(lesson) {
   const items = lesson.resources.map(id => resourceLibrary.find(resource => resource.id === id)).filter(Boolean);
   const module = moduleById(lesson.module);
+  const unlocked = isLessonUnlocked(lessons.findIndex(item => item.id === lesson.id));
   $("#lesson-related").innerHTML = `<div class="related-heading"><span>本课延伸资料</span><h2>先完成任务，再选一个深入</h2><p>这些资料已按“与本课直接相关”筛选，不要求全部看完。</p></div>
-    <div class="related-grid">${items.map(resource => `<a href="${resource.url}" target="_blank" rel="noopener noreferrer">
+    <div class="related-grid">${items.map(resource => unlocked ? `<a href="${resource.url}" target="_blank" rel="noopener noreferrer">
       <small>${resource.type} · ${resource.provider}</small><strong>${resource.title}</strong><p>${resource.note}</p><b>打开资源 ↗</b>
-    </a>`).join("")}</div>
+    </a>` : `<article class="related-locked"><small>${resource.type} · 待前置</small><strong>${resource.title}</strong><p>完成上一课后解锁这份资料。</p><b>尚未解锁</b></article>`).join("")}</div>
     <div class="source-note">所属单元：${module.title} · 资料链接核对日期：${courseVersion.verifiedAt}</div>`;
 }
 
@@ -233,12 +287,15 @@ function updateProgress() {
   $("#progress-detail").textContent = `${completed.size} / ${lessons.length} 课已完成`;
   $("#continue-button").textContent = completed.size ? "继续下一节未完成课程 →" : "开始第一课 →";
   renderRoadmap();
+  renderSequence();
+  renderPlan();
+  renderResources();
 }
 
 function showHome() {
   homeContainer.hidden = false;
   lessonView.hidden = true;
-  document.title = "AI 科研入门课 · 42 课完整路线";
+  document.title = "AI 科研入门课 · 66 课严格路线";
   renderNav();
   closeSidebar();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -254,6 +311,14 @@ function showLesson(index) {
   $("#lesson-kicker").textContent = lesson.kicker;
   $("#lesson-title").textContent = lesson.title;
   $("#lesson-summary").textContent = lesson.summary;
+  const unlocked = isLessonUnlocked(currentIndex);
+  const previous = currentIndex > 0 ? lessons[currentIndex - 1] : null;
+  $("#lesson-prerequisite").className = `lesson-prerequisite ${unlocked ? "ready" : "locked"}`;
+  $("#lesson-prerequisite").innerHTML = currentIndex === 0
+    ? `<b>起点课程</b><span>无需先修。完成本课后按顺序进入第 02 课。</span>`
+    : unlocked
+      ? `<b>先修已满足</b><span>上一课：${previous.number} ${previous.title}</span>`
+      : `<b>预览模式 · 尚未解锁</b><span>请先完成第 ${previous.number} 课《${previous.title}》。你可以阅读，但本课不能计入完成进度。</span>`;
   $("#lesson-goals").innerHTML = lesson.goals.map(goal => `<span class="goal-chip">学会：${goal}</span>`).join("");
   $("#lesson-content").innerHTML = lesson.body + codeLabHtml(lesson.id);
   enhanceCodeBlocks(lesson);
@@ -270,11 +335,14 @@ function showLesson(index) {
 
 function updateCompleteButton() {
   const done = completed.has(lessons[currentIndex].id);
+  const unlocked = isLessonUnlocked(currentIndex);
   $("#complete-button").classList.toggle("done", done);
-  $("#complete-button").textContent = done ? "本课已完成 ✓" : "标记本课完成 ✓";
+  $("#complete-button").disabled = !unlocked;
+  $("#complete-button").textContent = done ? "本课已完成 ✓" : unlocked ? "标记本课完成 ✓" : `先完成第 ${lessons[currentIndex - 1].number} 课`;
 }
 
 function toggleComplete() {
+  if (!isLessonUnlocked(currentIndex)) return;
   const id = lessons[currentIndex].id;
   completed.has(id) ? completed.delete(id) : completed.add(id);
   localStorage.setItem(storageKey, JSON.stringify([...completed]));
@@ -336,6 +404,7 @@ $("#verified-note").textContent = `链接核对：${courseVersion.verifiedAt}`;
 $("#stat-lessons").textContent = lessons.length;
 $("#stat-modules").textContent = courseModules.length;
 $("#stat-resources").textContent = resourceLibrary.length;
+$("#stat-weeks").textContent = pathway.totalWeeks;
 renderModuleFilters();
 renderNav();
 renderPlan();
